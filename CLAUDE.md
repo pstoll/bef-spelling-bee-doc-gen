@@ -4,7 +4,47 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a Node.js tool that generates spelling bee materials (DOCX word lists and PPTX presentation slides) for the Brookline Education Foundation's 5th Grade Spelling Bee. The tool reads spelling word data from Excel spreadsheet databases and generates formatted outputs for each round.
+This repository contains tools to generate spelling bee materials (word lists and presentation slides) for the Brookline Education Foundation's 5th Grade Spelling Bee.
+
+**Two approaches available:**
+
+1. **Apps Script (Recommended)** - Generate Google Docs and Slides directly from Google Sheets
+   - No local setup required
+   - Works directly in the cloud
+   - Anyone with Sheet access can run it
+   - See `apps-script/` directory and README
+
+2. **Node.js/Docker (Legacy)** - Generate DOCX/PPTX from downloaded Excel files
+   - Requires local setup and Docker
+   - Outputs DOCX/PPTX files that need PDF conversion
+   - See tag `nodejs-docker-only` for the original version
+   - Still maintained in `src/` directory
+
+---
+
+# Apps Script Approach (Recommended)
+
+See detailed documentation in `apps-script/README.md`
+
+## Quick Start
+
+1. Open the BEF Spelling Bee Google Sheet
+2. Extensions → Apps Script
+3. Copy code from `apps-script/Code.gs`, `Slides.gs`, and `Docs.gs`
+4. Reload spreadsheet
+5. Use "BEF Spelling Bee" menu → "Generate Materials..."
+
+## Architecture
+
+- **Code.gs** - Menu, data extraction, coordination
+- **Slides.gs** - Google Slides generation with BEF branding
+- **Docs.gs** - Google Docs generation with formatted word lists
+
+All configuration is in `CONFIG` objects at the top of each file. No hardcoded values.
+
+---
+
+# Node.js/Docker Approach (Legacy)
 
 ## Key Dependencies
 
