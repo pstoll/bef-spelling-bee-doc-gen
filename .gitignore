@@ -1,0 +1,45 @@
+# Node.js
+node_modules/
+npm-debug.log
+package-lock.json
+
+# Word databases - never commit these
+word_db/
+
+# Output directories
+outputs/
+
+# But allow test directories
+!test/
+!test/**/*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+*.icloud
+
+# DOCX/Office temporary files
+~$*.doc*
+~$*.xls*
+~$*.ppt*
+
+# Build logs
+build.log
+
+# Docker
+.dockerignore
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Patches (may contain sensitive changes)
+patches/
+
+# Credentials and authentication
+auth/

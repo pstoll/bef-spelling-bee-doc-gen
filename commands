@@ -1,0 +1,102 @@
+#/bin/bash
+
+# consider https://spreadsheet.dev/generate-google-slides-from-google-sheets
+# https://spreadsheet.dev/mail-merge-from-google-sheets-to-google-slides
+# https://spreadsheet.dev/get-google-sheets-name-current-sheet-name-list-of-sheets-apps-script
+# https://spreadsheet.dev/convert-each-row-google-sheets-into-slide-google-slides-apps-script
+
+BEF_DO_CVS_TO_JSON=0
+DB_YEAR=2024
+DB_TIMESTAMP="-20241113-2000"
+#DB_SOURCE_XSLX_FILE="$HOME/Downloads/Copy Spelling Bee Word Database 2019.xlsx"
+DB_SOURCE_XLSX_FILE="$HOME/Downloads/spelling-bee-word-database-${DB_YEAR}${DB_TIMESTAMP}.xlsx"
+DB_INPUT_XLSX_FILE="inputs/spelling-bee-word-database-${DB_YEAR}${DB_TIMESTAMP}.xlsx"
+BEE_DOC_TEMPLATE=
+# old approach, converting CSV to JSON
+if [ "${BEF_DO_CVS_TO_JSON}" == "1 ];
+then
+convert csv to json
+csvjson < spelling-bee-word-database-2018-round1.csv > bee-r1-2018.json
+
+# convert csv to json
+datadir="./${YEAR}"
+pushd $datadir
+for id in $(seq 1 6); do
+    # yes, it is still named 2018. oh well. we are picking the 2019 column.
+    infile="$datadir/Spelling Bee Word Database ${YEAR} - Round ${id}.csv"
+    outfile="$datadir/bee-words-round${id}.json";
+    csvjson "$infile" > "$outfile"
+    done
+popd
+fi
+
+
+
+# download spreadsheet as xlsx
+cp "${DB_SOURCE_XLSX_FILE}" "${DB_INPUT_XLSX_FILE}"
+
+# get a shell in the machine
+
+# launch rancher desktip to get docker on macosx
+# build 
+docker build -t pstoll/bef-spelling-bee-pdf-gen .
+
+# start machine
+docker run -it \
+       -v "${PWD}/inputs":/inputs \
+       -v "${PWD}/outputs":/outputs \
+       -v "${PWD}/src":/src \
+       pstoll/bef-spelling-bee-pdf-gen
+# inside container:
+export year=2023
+export word_db="bee-database-20231110-0810.xlsx"
+export doctemplate="bee-template-2023-pages.docx"
+node ./gen-docx-template.js "${year}" "/inputs/${word_db}" "/inputs/${doctemplate}" /outputs/2023
+node make-ppts.js "${year}" "/inputs/${word_db}" /outputs/2023
+
+#2022
+node ./gen-docx-template.js 2022 /inputs/spelling-bee-word-database-2022-20221106-1055.xlsx /inputs/bee-template-2019Fall.docx /outputs
+node make-ppts.js 2022 /inputs/spelling-bee-word-database-2022-20221106-1055.xlsx /outputs
+
+DB="/${DB_INPUT_XLSX_FILE}"
+
+node ./gen-docx-template.js 2019Fall ${DB} ./bee-template-2019.docx
+node make-ppts.js 2019Fall ./spelling-bee-word-database-2019-20190304-2024.xlsx
+
+node ./gen-docx-template.js ${DB_YEAR} ${DB} ./bee-template-${DB_YEAR}.docx /outputs/${DB_YEAR}year
+node make-ppts.js ${DB_YEAR} "${DB}" "/outputs/${DB_YEAR}"
+  
+# create all rounds for current year into output directory
+node gen-docx-template.js
+# To automate:
+#
+# https://developers.google.com/slides/api/guides/merge
+# auth setup: 
+#    https://developers.google.com/slides/api/quickstart/apps-script
+# accessing js libraries from google app script:
+#    https://stackoverflow.com/questions/18646554/how-to-use-external-javascript-library-trello-in-google-apps-script
+#
+# https://github.com/mattbarker016/sheets2slides/blob/master/sheets2slides.js
+#
+# access data directly from google doc
+# or start by reading an excel spreadsheet. probably easier for now, start here.
+# https://stackoverflow.com/questions/8238407/how-to-parse-excel-xls-file-in-javascript-html5
+# and combine it with this e.g. so people can upload an excel file https://github.com/SheetJS/SheetJS.github.io
+# and someday direct from google doc
+#   https://stackoverflow.com/questions/48509968/parse-a-google-spreadsheet-into-a-javascript-array
+#   https://blog.stephsmith.io/tutorial-google-sheets-api-node-js/
+#   https://stackoverflow.com/questions/55018655/get-all-data-of-multiple-worksheet-in-google-api-in-js
+#   https://www.npmjs.com/package/google-spreadsheet
+
+
+# lesser but interesting
+# https://github.com/lourd/react-google-sheet
+
+
+## manual steps:
+# for each sheet in the google doc, save as CSV
+# rename to normalize, e.g. get rid of spaces around round.
+# convert csv to json for each round
+# run node gen-docx script
+# open all docx files, save as print-best pdfs
+# upload pdfs and docxs to new folder in google drive

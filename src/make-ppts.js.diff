@@ -1,0 +1,21 @@
+*** make-ppts.js	Wed Nov 13 20:44:54 2024
+--- src/make-ppts.js	Wed Nov 13 20:46:40 2024
+***************
+*** 84,91 ****
+  		       line:befDefaults.darkGreen, lineSize:1}},
+  	    { 'rect': {x:"51%", y:0, w:'39%', h:"30%",
+  		       fill:befDefaults.gray, line:'000000', lineSize:0}},
+! 	    { 'rect': {x:"51%", y:"90%", w:'39%', h:3,
+! 		       fill:befDefaults.green, line:'000000', lineSize:0}},
+  	    { 'image': { x:"70%", y:"60%", w:2.1, h:2.1, path:'bee-right.png' } }
+  	]
+      });
+--- 84,91 ----
+  		       line:befDefaults.darkGreen, lineSize:1}},
+  	    { 'rect': {x:"51%", y:0, w:'39%', h:"30%",
+  		       fill:befDefaults.gray, line:'000000', lineSize:0}},
+! 	    { 'rect': {x:"51%", y:"90%", w:'39%', h:2,
+! 		       fill:befDefaults.green, line:'000000', lineSize:1}},
+  	    { 'image': { x:"70%", y:"60%", w:2.1, h:2.1, path:'bee-right.png' } }
+  	]
+      });
