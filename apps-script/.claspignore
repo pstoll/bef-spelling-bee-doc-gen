@@ -1,0 +1,5 @@
+# Ignore documentation
+README.md
+
+# Ignore clasp config (it's local only)
+.clasp.json
