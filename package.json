@@ -17,8 +17,16 @@
     "xlsx": "^0.12.3"
   },
   "scripts": {
-      "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clasp:login": "cd apps-script && clasp login",
+    "clasp:push": "cd apps-script && clasp push",
+    "clasp:pull": "cd apps-script && clasp pull",
+    "clasp:open": "cd apps-script && clasp open",
+    "deploy": "cd apps-script && clasp push"
   },
   "author": "Perry A Stoll",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@google/clasp": "^3.1.0"
+  }
 }
