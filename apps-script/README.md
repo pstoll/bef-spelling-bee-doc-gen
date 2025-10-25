@@ -14,78 +14,184 @@ The Apps Script:
 
 ## Files
 
-- **Code.gs** - Main script with menu, data extraction, and coordination logic
-- **Slides.gs** - Google Slides generation functions
-- **Docs.gs** - Google Docs generation functions
+- **Code.js** - Main script with menu, data extraction, and coordination logic
+- **Slides.js** - Google Slides generation functions
+- **Docs.js** - Google Docs generation functions
+- **appsscript.json** - Apps Script project configuration
+- **.clasp.json** - Configuration for clasp CLI deployment
+- **.claspignore** - Files to exclude from deployment
 
-## Setup Instructions
+## For End Users (Running the Script)
 
-### 1. Open Your Google Sheet
+**If the script is already installed in your spreadsheet, you just need to authorize it once.**
 
-Open the BEF Spelling Bee Word Database spreadsheet in Google Sheets.
+### First Time Authorization (Required Once Per User)
 
-### 2. Open Apps Script Editor
+1. **Open the BEF Spelling Bee Word Database spreadsheet** in Google Sheets
 
-1. Click **Extensions → Apps Script**
-2. This opens the Apps Script editor in a new tab
+2. **Look for the "BEF Spelling Bee" menu** at the top
+   - It appears between "Help" and your profile picture
+   - If you don't see it, wait a few seconds for the sheet to fully load
+   - If it still doesn't appear, contact the administrator
 
-### 3. Add the Script Files
+3. **Click any menu item** (e.g., "BEF Spelling Bee → Generate Materials...")
 
-In the Apps Script editor:
+4. **You'll see an "Authorization Required" dialog**
+   - Click **"Continue"** or **"Review Permissions"**
 
-1. Delete any existing code in `Code.gs`
-2. Copy the entire contents of `apps-script/Code.gs` and paste it
-3. Click the `+` next to "Files" to add a new script file
-4. Name it `Slides` (the .gs extension is added automatically)
-5. Copy the entire contents of `apps-script/Slides.gs` and paste it
-6. Add another new script file named `Docs`
-7. Copy the entire contents of `apps-script/Docs.gs` and paste it
+5. **Select your Google account**
+   - Choose the account that has access to this spreadsheet
 
-### 4. Save the Project
+6. **You'll see a warning: "Google hasn't verified this app"**
+   - **This is normal!** Google shows this for all custom scripts
+   - Click **"Advanced"** (small text at bottom left)
+   - Click **"Go to BEF Spelling Bee Generator (unsafe)"**
+   - Despite "unsafe", this is safe - it's a custom script for BEF, not a public app
 
-1. Click the disk icon or press `Cmd+S` / `Ctrl+S`
-2. Name the project: "BEF Spelling Bee Generator"
+7. **Review the permissions and click "Allow"**
+   - The script needs permission to read the spreadsheet and create Slides/Docs
 
-### 5. Authorize the Script
+8. **You're done!** The authorization is complete
+   - You won't need to do this again unless permissions change
+   - The menu function you clicked should now run
 
-1. Click **Run** (the play button) next to the function dropdown
-2. Select `onOpen` from the dropdown if not already selected
-3. Click **Run**
-4. You'll see a permissions dialog - click **Review Permissions**
-5. Select your Google account
-6. Click **Advanced** → **Go to BEF Spelling Bee Generator (unsafe)**
-7. Click **Allow**
+### What If I Get "Permission Denied"?
 
-This grants the script permission to:
-- Read data from your spreadsheet
-- Create Google Slides and Docs
-- Create folders in Google Drive
+If you get permission errors:
+1. Try running the menu item again - sometimes the first attempt fails
+2. Make sure you're logged into the correct Google account
+3. Close the spreadsheet tab and reopen it
+4. If still failing, contact the administrator
 
-### 6. Reload Your Spreadsheet
+## For Developers (Deploying Code Updates)
 
-1. Go back to your Google Sheet tab
-2. Refresh the page (Cmd+R / Ctrl+R)
-3. You should now see a new menu: **BEF Spelling Bee**
+### Prerequisites
+
+- Node.js and npm installed
+- Access to the Apps Script project
+- Clasp CLI installed (`npm install -g @google/clasp`)
+
+### Initial Setup
+
+1. **Clone this repository**
+   ```bash
+   git clone https://github.com/pstoll/bef-spelling-bee-doc-gen.git
+   cd bef-spelling-bee-doc-gen
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Login to clasp** (if not already logged in)
+   ```bash
+   npm run clasp:login
+   ```
+   - This opens a browser to authorize clasp
+   - Use the Google account that owns the Apps Script project
+
+4. **Verify connection**
+   ```bash
+   npm run clasp:push
+   ```
+   - Should show "Script is already up to date" or push the files
+
+### Making Code Changes
+
+1. **Edit the code locally** in your editor (VS Code, etc.)
+   - Files are in `apps-script/Code.js`, `Slides.js`, `Docs.js`
+
+2. **Push changes to Apps Script**
+   ```bash
+   npm run clasp:push
+   ```
+   - This uploads your local changes to the Apps Script project
+   - Users will see the changes immediately (may need to reload the spreadsheet)
+
+3. **Test the changes**
+   - Open the spreadsheet in your browser
+   - Reload the page to pick up the new code
+   - Run the menu items to test
+
+4. **Commit to git**
+   ```bash
+   git add apps-script/
+   git commit -m "Description of changes"
+   git push
+   ```
+
+### Useful Commands
+
+```bash
+# Push local code to Apps Script
+npm run clasp:push
+
+# Pull latest code from Apps Script (if you edited in the web editor)
+npm run clasp:pull
+
+# Open the Apps Script project in browser
+npm run clasp:open
+```
 
 ## Usage
 
-### Generate Materials
+### Generate Materials for a Spelling Bee
 
-1. Click **BEF Spelling Bee → Generate Materials...**
-2. Enter the year when prompted (e.g., `2024` or `2019Fall`)
-3. The script will:
-   - Find all sheets named "Round 1", "Round 2", etc.
-   - Filter words for the specified year
-   - Generate slides and docs for each round
-   - Save everything to a Google Drive folder named "BEF Spelling Bee [YEAR]"
-4. When complete, you'll see a dialog with links to the folder and files
+1. **Open the BEF Spelling Bee Word Database spreadsheet**
 
-### Test Functions
+2. **Click the menu: BEF Spelling Bee → Generate Materials...**
 
-Before generating materials, you can test:
+3. **Enter the year** when prompted
+   - Examples: `2024`, `2019Fall`
+   - This must match a column name in your spreadsheet exactly
 
-- **Test: Read Round Data...** - Reads and displays word count from a specific round
-- **Test: Generate Sample Slide** - Creates a sample presentation to verify formatting
+4. **Enter which rounds to generate**
+   - Type `1` to generate just Round 1
+   - Type `1,2,3` to generate Rounds 1, 2, and 3
+   - Type `all` to generate all rounds (may timeout for many rounds)
+   - **Tip**: Generate one round at a time to avoid timeouts
+
+5. **Wait for generation to complete**
+   - The script will process each round (this may take 30-60 seconds per round)
+   - You'll see a progress message while it runs
+
+6. **Check the results dialog**
+   - Shows links to all generated files
+   - Files are saved in a Google Drive folder named "BEF Spelling Bee [YEAR]"
+   - The folder is created in the same directory as your spreadsheet
+
+### What Gets Generated
+
+For each round, the script creates:
+- **Slides** - Google Slides presentation with one slide per word
+- **Docs** - Google Docs word list with definitions and example sentences
+
+### Requirements
+
+- A slide template named **"bef-bee-slide-template"** must exist in the same folder as your spreadsheet
+- Spreadsheet sheets must be named **"Round 1", "Round 2",** etc.
+- The year column (e.g., "2024") must exist with "X" or "x" marks for words to include
+
+### Troubleshooting
+
+**"Exceeded maximum execution time"**
+- Generate rounds one at a time instead of all at once
+- Try generating just "1" instead of "all"
+
+**"No files generated"**
+- Check that the year you entered matches a column name exactly
+- Use "Debug: Show Sheet Structure" menu item to see available year columns
+
+**"Template file not found"**
+- Make sure "bef-bee-slide-template" exists in the same folder as your spreadsheet
+- Check that the name matches exactly (case-insensitive)
+
+### Debug Tools
+
+Available in the menu for troubleshooting:
+
+- **Debug: Show Sheet Structure** - Shows column names and sample data from Round 1
 
 ## Configuration
 
@@ -173,12 +279,36 @@ To add these to Apps Script, you would need to:
 ### Fonts
 Google Slides may have different font availability than PowerPoint. The script uses Questrial (BEF brand font) but falls back to Arial if unavailable.
 
+## TODO
+
+### High Priority
+- [ ] **Test and verify Doc generation** - Slides are working, but Docs need full end-to-end testing
+- [ ] **Create detailed video walkthrough** for non-technical users showing:
+  - How to authorize the script
+  - How to run generation
+  - What to do if errors occur
+- [ ] **Add template requirement to README** - Document that users need a slide template named "bef-bee-slide-template"
+
+### Medium Priority
+- [ ] **Better error messages** - Make errors more user-friendly for non-technical users
+- [ ] **Add "Setup Check" menu item** - Verify template exists, folder structure is correct, etc.
+- [ ] **Make event date configurable** - Allow users to set it in a cell instead of auto-generating
+- [ ] **Add progress indicator** - Show progress when generating multiple rounds
+- [ ] **Add batch generation with pause/resume** - Handle execution timeouts for large batches
+
+### Low Priority
+- [ ] **Add PDF export functionality** - Auto-convert Slides/Docs to PDF
+- [ ] **Add email notification** when generation completes
+- [ ] **Improve template validation** - Better error messages if template is missing placeholders
+- [ ] **Add "Preview" feature** - Generate just first 3 words to preview formatting
+
 ## Next Steps
 
-Potential enhancements:
-- Create a template Google Slides with BEF branding
-- Add bee graphics to slides
-- Make event date configurable via spreadsheet cell
-- Add PDF export functionality
-- Add email notification when generation completes
-- Allow selecting specific rounds instead of all rounds
+Completed:
+- ✅ Allow selecting specific rounds instead of all rounds
+- ✅ Create output folder in same directory as spreadsheet
+
+Potential future enhancements:
+- Enhanced BEF branding in slides (currently template-based)
+- Automatic year detection from current date
+- Word count statistics and reports
