@@ -63,6 +63,9 @@ function generateSlides(year, roundNumber, words, outputFolder) {
     // The name parameter is ignored in this syntax, so we rename afterward
     const fileName = `BEF Spelling Bee ${year} - Round ${roundNumber} - Slides`;
     Logger.log(`Creating copy via Drive API (will rename after)...`);
+    Logger.log(`Template file ID: ${templateFile.getId()}`);
+    Logger.log(`Output folder ID: ${outputFolder.getId()}`);
+    Logger.log(`Output folder name: ${outputFolder.getName()}`);
 
     // Use 3-param syntax (only one that allows edits to persist)
     const copy = Drive.Files.copy({}, templateFile.getId(), {
@@ -71,6 +74,25 @@ function generateSlides(year, roundNumber, words, outputFolder) {
     const copyId = copy.id;
 
     Logger.log(`Created copy with ID: ${copyId}, renaming to: ${fileName}`);
+
+    // Check where the copy actually ended up immediately after creation
+    const copyCheck = Drive.Files.get(copyId, {fields: 'parents'});
+    Logger.log(`Copy created with parents: ${JSON.stringify(copyCheck.parents)}`);
+
+    // Move file to correct folder if it's not already there
+    const currentParentId = copyCheck.parents[0];
+    const targetParentId = outputFolder.getId();
+    if (currentParentId !== targetParentId) {
+      Logger.log(`Moving file from ${currentParentId} to ${targetParentId}...`);
+
+      // Use DriveApp to move the file
+      const tempFile = DriveApp.getFileById(copyId);
+      const oldParent = DriveApp.getFolderById(currentParentId);
+      oldParent.removeFile(tempFile);
+      outputFolder.addFile(tempFile);
+
+      Logger.log(`File moved successfully`);
+    }
 
     Logger.log(`Created presentation from template: ${copyId}`);
 
@@ -273,6 +295,14 @@ function generateSlides(year, roundNumber, words, outputFolder) {
 
     // Return as DriveApp File object for compatibility
     const file = DriveApp.getFileById(copyId);
+
+    // Verify file is in correct folder
+    const parents = file.getParents();
+    while (parents.hasNext()) {
+      const parent = parents.next();
+      Logger.log(`File is in folder: ${parent.getName()} (${parent.getId()})`);
+    }
+
     Logger.log(`Slides generated successfully: ${file.getUrl()}`);
     return file;
 
