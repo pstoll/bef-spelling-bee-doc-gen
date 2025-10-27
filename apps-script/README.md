@@ -170,6 +170,7 @@ For each round, the script creates:
 ### Requirements
 
 - A slide template named **"bef-bee-slide-template"** must exist in the same folder as your spreadsheet
+- A doc template named **"bef-bee-words-template"** must exist in the same folder as your spreadsheet
 - Spreadsheet sheets must be named **"Round 1", "Round 2",** etc.
 - The year column (e.g., "2024") must exist with "X" or "x" marks for words to include
 
@@ -279,22 +280,31 @@ To add these to Apps Script, you would need to:
 ### Fonts
 Google Slides may have different font availability than PowerPoint. The script uses Questrial (BEF brand font) but falls back to Arial if unavailable.
 
+## Status
+
+**Both Docs and Slides generation are fully working and tested!**
+
+- ✅ Tested end-to-end with all 6 rounds (2024)
+- ✅ Generates 12 files (6 slides + 6 docs) successfully
+- ✅ Docs use template table approach to keep word entries together on same page
+- ✅ Slides use template-based approach with BEF branding
+- ✅ Handles duplicate file names (deletes old files before creating new ones)
+- ✅ No execution timeouts with full 6-round generation
+
 ## TODO
 
 ### High Priority
-- [ ] **Test and verify Doc generation** - Slides are working, but Docs need full end-to-end testing
 - [ ] **Create detailed video walkthrough** for non-technical users showing:
   - How to authorize the script
   - How to run generation
   - What to do if errors occur
-- [ ] **Add template requirement to README** - Document that users need a slide template named "bef-bee-slide-template"
 
 ### Medium Priority
 - [ ] **Better error messages** - Make errors more user-friendly for non-technical users
 - [ ] **Add "Setup Check" menu item** - Verify template exists, folder structure is correct, etc.
 - [ ] **Make event date configurable** - Allow users to set it in a cell instead of auto-generating
 - [ ] **Add progress indicator** - Show progress when generating multiple rounds
-- [ ] **Add batch generation with pause/resume** - Handle execution timeouts for large batches
+- [ ] **Optimize waitForFileReady timeout** - Reduce from 30s to 5s (currently exits early anyway)
 
 ### Low Priority
 - [ ] **Add PDF export functionality** - Auto-convert Slides/Docs to PDF
@@ -302,13 +312,17 @@ Google Slides may have different font availability than PowerPoint. The script u
 - [ ] **Improve template validation** - Better error messages if template is missing placeholders
 - [ ] **Add "Preview" feature** - Generate just first 3 words to preview formatting
 
-## Next Steps
+## Completed
 
-Completed:
 - ✅ Allow selecting specific rounds instead of all rounds
 - ✅ Create output folder in same directory as spreadsheet
+- ✅ Test and verify Doc generation - working with all 68 words in Round 1
+- ✅ Test and verify Slides generation - working with template-based approach
+- ✅ Fix Docs formatting using pristine template row copy
+- ✅ Add file deletion to prevent duplicate file names
 
-Potential future enhancements:
+## Potential Future Enhancements
+
 - Enhanced BEF branding in slides (currently template-based)
 - Automatic year detection from current date
 - Word count statistics and reports
