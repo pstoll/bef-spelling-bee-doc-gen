@@ -43,6 +43,7 @@ function onOpen() {
     .addSeparator()
     .addItem('Debug: Show Sheet Structure', 'debugShowSheetStructure')
     .addSeparator()
+    .addItem('Test: Generate Sample Doc', 'testGenerateSampleDoc')
     .addItem('Test: Simple Copy & Replace', 'testSimpleCopyAndReplace')
     .addItem('Test: Final Workflow Test', 'testFinalWorkflow')
     .addToUi();
@@ -411,7 +412,7 @@ function testSimpleCopyAndReplace() {
 
   Logger.log('Test: Copy template and do one global replacement...');
 
-  const templateFile = findTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
+  const templateFile = findSlideTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
   if (!templateFile) {
     SpreadsheetApp.getUi().alert('Template not found!');
     return;
@@ -487,5 +488,35 @@ function testFinalWorkflow() {
     );
   } else {
     SpreadsheetApp.getUi().alert('Test failed! Check logs.');
+  }
+}
+
+function testGenerateSampleDoc() {
+  const testWords = [
+    {
+      word: 'example',
+      pronunciation: 'ig-ZAM-pul',
+      definition: 'A thing characteristic of its kind or illustrating a general rule.',
+      sentence: 'This is an example sentence with the word example in it.'
+    },
+    {
+      word: 'spelling',
+      pronunciation: 'SPEL-ing',
+      definition: 'The process or activity of writing or naming the letters of a word.',
+      sentence: 'The spelling bee is a competition where students demonstrate their spelling skills.'
+    }
+  ];
+
+  const folder = getOrCreateOutputFolder('TEST');
+  const file = generateDoc('TEST', '99', testWords, folder);
+
+  if (file) {
+    SpreadsheetApp.getUi().alert(
+      'Test Doc Created',
+      `Sample doc created successfully!\n\nView it here:\n${file.getUrl()}`,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+  } else {
+    SpreadsheetApp.getUi().alert('Error creating test doc. Check the logs.');
   }
 }

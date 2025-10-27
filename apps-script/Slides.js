@@ -52,7 +52,7 @@ const SLIDES_CONFIG = {
 function generateSlides(year, roundNumber, words, outputFolder) {
   try {
     // Find template file in same folder as spreadsheet
-    const templateFile = findTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
+    const templateFile = findSlideTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
     if (!templateFile) {
       Logger.log(`Error: Template file "${SLIDES_CONFIG.TEMPLATE.FILE_NAME}" not found in same folder as spreadsheet`);
       return null;
@@ -62,6 +62,15 @@ function generateSlides(year, roundNumber, words, outputFolder) {
     // Note: We use 3-param syntax because it's the only one that allows text replacements to persist
     // The name parameter is ignored in this syntax, so we rename afterward
     const fileName = `BEF Spelling Bee ${year} - Round ${roundNumber} - Slides`;
+
+    // Delete any existing files with the same name in the folder
+    const existingFiles = outputFolder.getFilesByName(fileName);
+    while (existingFiles.hasNext()) {
+      const oldFile = existingFiles.next();
+      Logger.log(`Deleting existing file: ${fileName} (${oldFile.getId()})`);
+      oldFile.setTrashed(true);
+    }
+
     Logger.log(`Creating copy via Drive API (will rename after)...`);
     Logger.log(`Template file ID: ${templateFile.getId()}`);
     Logger.log(`Output folder ID: ${outputFolder.getId()}`);
@@ -383,11 +392,11 @@ function addWordSlide(presentation, word) {
 // ============================================================================
 
 /**
- * Find template file in same folder as spreadsheet (case-insensitive)
+ * Find slide template file in same folder as spreadsheet (case-insensitive)
  * @param {string} templateName - Template file name to find
  * @returns {File|null} The template file or null if not found
  */
-function findTemplateFile(templateName) {
+function findSlideTemplateFile(templateName) {
   // Get the spreadsheet's parent folder
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const spreadsheetFile = DriveApp.getFileById(ss.getId());
@@ -469,7 +478,7 @@ function getEventDate(year) {
  */
 function testDriveCopySyntaxes() {
   try {
-    const templateFile = findTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
+    const templateFile = findSlideTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
     if (!templateFile) {
       Logger.log('Template not found');
       return;
@@ -543,7 +552,7 @@ function testDriveCopySyntaxes() {
  */
 function testReplaceAllTextMethods() {
   try {
-    const templateFile = findTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
+    const templateFile = findSlideTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
     if (!templateFile) {
       Logger.log('Template not found');
       return;
@@ -624,7 +633,7 @@ function testReplaceAllTextMethods() {
  */
 function testTextPersistence() {
   try {
-    const templateFile = findTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
+    const templateFile = findSlideTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
     if (!templateFile) {
       Logger.log('Template not found');
       return;
@@ -690,7 +699,7 @@ function testTextPersistence() {
  */
 function testRenameWorkaround() {
   try {
-    const templateFile = findTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
+    const templateFile = findSlideTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
     if (!templateFile) {
       Logger.log('Template not found');
       return;
@@ -855,7 +864,7 @@ function testCreateNewPresentation() {
  */
 function testDriveAppMakeCopy() {
   try {
-    const templateFile = findTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
+    const templateFile = findSlideTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
     if (!templateFile) {
       Logger.log('Template not found');
       return;
@@ -910,7 +919,7 @@ function testDriveAppMakeCopy() {
 function testMinimalCopy() {
   try {
     // Find template
-    const templateFile = findTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
+    const templateFile = findSlideTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
     if (!templateFile) {
       Logger.log('Template not found');
       return;
