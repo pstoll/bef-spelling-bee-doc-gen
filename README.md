@@ -33,7 +33,7 @@ Generate DOCX and PPTX files from downloaded Excel files. Requires local setup.
 - Deterministic shuffling with seedrandom
 - Custom BEF branding and formatting
 
-**Documentation:** See [CLAUDE.md](CLAUDE.md) for details
+**Documentation:** See [src/README.md](src/README.md)
 
 **When to use:**
 - Need DOCX/PPTX files instead of Google formats
