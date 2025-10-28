@@ -71,6 +71,47 @@ If you get permission errors:
 - Access to the Apps Script project
 - Clasp CLI installed (`npm install -g @google/clasp`)
 
+### Template Files Setup
+
+The Apps Script requires two template files to be present in the same Google Drive folder as your spreadsheet:
+
+1. **`bef-bee-slide-template`** - Google Slides template
+2. **`bef-bee-words-template`** - Google Docs template
+
+**Template backups are stored in this repo** at `apps-script/templates/` as PPTX and DOCX files.
+
+#### Uploading Templates to Google Drive
+
+If you need to set up the templates (e.g., in a new Google account or if they were deleted):
+
+1. **Navigate to the folder** containing your BEF Spelling Bee spreadsheet in Google Drive
+
+2. **Upload the Slides template:**
+   - Upload `apps-script/templates/bef-bee-slide-template.pptx` to the folder
+   - Google Drive will automatically convert it to Google Slides format
+   - Rename it to **exactly** `bef-bee-slide-template` (case-insensitive, but must match)
+
+3. **Upload the Docs template:**
+   - Upload `apps-script/templates/bef-bee-words-template.docx` to the folder
+   - Google Drive will automatically convert it to Google Docs format
+   - Rename it to **exactly** `bef-bee-words-template` (case-insensitive, but must match)
+
+4. **Verify the templates are in the correct location:**
+   - They should be in the same folder as your spreadsheet
+   - The script will search for them by name in this folder
+
+#### Updating Template Backups
+
+If you modify the templates in Google Drive and want to update the repo backups:
+
+1. **Download from Google Drive:**
+   - Open the template in Google Slides/Docs
+   - File → Download → Microsoft PowerPoint (.pptx) or Microsoft Word (.docx)
+
+2. **Replace the backup files:**
+   - Save to `apps-script/templates/` (overwriting the old files)
+   - Commit to git with a description of what changed
+
 ### Initial Setup
 
 1. **Clone this repository**
@@ -302,6 +343,7 @@ Google Slides may have different font availability than PowerPoint. The script u
 ### Medium Priority
 - [ ] **Better error messages** - Make errors more user-friendly for non-technical users
 - [ ] **Add "Setup Check" menu item** - Verify template exists, folder structure is correct, etc.
+- [ ] **Let user select the output folder** - Allow choosing destination instead of auto-creating in same directory
 - [ ] **Make event date configurable** - Allow users to set it in a cell instead of auto-generating
 - [ ] **Add progress indicator** - Show progress when generating multiple rounds
 - [ ] **Optimize waitForFileReady timeout** - Reduce from 30s to 5s (currently exits early anyway)

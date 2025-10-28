@@ -31,10 +31,14 @@ const SLIDES_CONFIG = {
     // Template file name (should be in same folder as spreadsheet, case-insensitive)
     FILE_NAME: 'bef-bee-slide-template',
     // Slide indices in the template (0-based)
-    TITLE_SLIDE_INDEX: 0,
-    WORD_SLIDE_INDEX: 2,  // Swapped: word is on slide 3 (index 2)
-    INFO_SLIDE_INDEX: 1   // Swapped: info is on slide 2 (index 1)
-  }
+    TITLE_SLIDE_INDEX: 0,        // Slide 1: Title slide with {{year}}, {{round}}, {{date}}
+    INTERSTITIAL_SLIDE_INDEX: 1, // Slide 2: "Spellers at Work" - hardcoded text
+    WORD_SLIDE_INDEX: 2,         // Slide 3: Word slide with {{word}}
+    CONCLUSION_SLIDE_INDEX: 3    // Slide 4: "This concludes Round {{round}}"
+  },
+
+  // Event configuration
+  EVENT_DATE: 'Nov 16, 2025'  // Date shown on title slide - update this each year
 };
 
 // ============================================================================
@@ -127,68 +131,43 @@ function generateSlides(year, roundNumber, words, outputFolder) {
     let slides = presentation.getSlides();
     Logger.log(`DEBUG: Template has ${slides.length} slides after copy`);
     const titleSlide = slides[SLIDES_CONFIG.TEMPLATE.TITLE_SLIDE_INDEX];
-    const wordSlideOriginal = slides[SLIDES_CONFIG.TEMPLATE.WORD_SLIDE_INDEX];
-    const infoSlideOriginal = slides[SLIDES_CONFIG.TEMPLATE.INFO_SLIDE_INDEX];
+    const interstitialSlideTemplate = slides[SLIDES_CONFIG.TEMPLATE.INTERSTITIAL_SLIDE_INDEX];
+    const wordSlideTemplate = slides[SLIDES_CONFIG.TEMPLATE.WORD_SLIDE_INDEX];
+    const conclusionSlideTemplate = slides[SLIDES_CONFIG.TEMPLATE.CONCLUSION_SLIDE_INDEX];
 
     // Validate template structure
     Logger.log(`DEBUG: Validating template structure...`);
-    const wordSlideText = wordSlideOriginal.getShapes().map(s => s.getText().asString()).join(' ');
-    const infoSlideText = infoSlideOriginal.getShapes().map(s => s.getText().asString()).join(' ');
+    const wordSlideText = wordSlideTemplate.getShapes().map(s => s.getText().asString()).join(' ');
 
     if (!wordSlideText.includes('{{word}}')) {
       Logger.log(`WARNING: Word slide (index ${SLIDES_CONFIG.TEMPLATE.WORD_SLIDE_INDEX}) does not contain {{word}} placeholder!`);
       Logger.log(`WARNING: Word slide contains: ${wordSlideText.substring(0, 100)}`);
       throw new Error(`Template validation failed: Word slide missing {{word}} placeholder. Check WORD_SLIDE_INDEX in config.`);
     }
-    if (!infoSlideText.includes('{{message}}')) {
-      Logger.log(`WARNING: Info slide (index ${SLIDES_CONFIG.TEMPLATE.INFO_SLIDE_INDEX}) does not contain {{message}} placeholder!`);
-      Logger.log(`WARNING: Info slide contains: ${infoSlideText.substring(0, 100)}`);
-      throw new Error(`Template validation failed: Info slide missing {{message}} placeholder. Check INFO_SLIDE_INDEX in config.`);
-    }
     Logger.log(`DEBUG: Template validation passed`);
-
-    // Don't remove or duplicate anything yet - just use the templates as-is
-    const wordSlideTemplate = wordSlideOriginal;
-    const infoSlideTemplate = infoSlideOriginal;
 
     slides = presentation.getSlides();
     Logger.log(`DEBUG: Using template slides directly: ${slides.length} slides`);
     Logger.log(`DEBUG: Will generate slides for ${words.length} words`);
 
-    // Title slide is already updated with placeholders - keep it
+    // Structure: [Title (0), Interstitial (1), Word template (2), Conclusion (3)]
+    // Keep the first interstitial (slide 1) - it's the opening "Round X... quiet please" slide
+    // Make copies of templates for duplication, then delete word template original
+    Logger.log(`DEBUG: Making pristine copies of templates...`);
+    const wordTemplateForDuplication = wordSlideTemplate.duplicate();
+    const interstitialTemplateForDuplication = interstitialSlideTemplate.duplicate();
 
-    // Track insertion index - start after title slide
-    let currentIndex = 1;
+    Logger.log(`DEBUG: Deleting word template original...`);
+    wordSlideTemplate.remove();
+    // NOTE: We keep the original interstitial at index 1 as the opening slide
 
-    // Add intro "Spellers at Work" slide with round number
-    Logger.log(`DEBUG: Creating intro slide at index ${currentIndex}`);
-    try {
-      const introSlide = infoSlideTemplate.duplicate();
-      introSlide.move(currentIndex);
-      currentIndex++;
-      Logger.log(`DEBUG: Intro slide created and moved to position ${currentIndex - 1}`);
+    // After deleting word template, structure is: [Title (0), Interstitial (1), Conclusion (2), copies...]
+    // We'll insert word slides starting at index 2 (after opening interstitial)
 
-      // Replace text by finding and modifying shapes directly
-      const shapes = introSlide.getShapes();
-      shapes.forEach(shape => {
-        const text = shape.getText();
-        let currentText = text.asString();
-        if (currentText.includes('{{message}}')) {
-          currentText = currentText.replace('{{message}}', `Spellers at Work\n\n..quiet please...`);
-        }
-        if (currentText.includes('{{round}}')) {
-          currentText = currentText.replace('{{round}}', `Round ${roundNumber}`);
-        }
-        text.setText(currentText);
-      });
+    slides = presentation.getSlides();
+    Logger.log(`DEBUG: After deleting word template, have ${slides.length} slides`);
 
-      slides = presentation.getSlides();
-      Logger.log(`DEBUG: After intro slide, now have ${slides.length} slides`);
-    } catch (e) {
-      Logger.log(`ERROR: Failed to create intro slide: ${e.message}`);
-      Logger.log(`ERROR: Stack: ${e.stack}`);
-      throw e;
-    }
+    let currentIndex = 2; // Start after title (0) and opening interstitial (1)
 
     // Add word slides with interstitial slides
     let wordSlideCount = 0;
@@ -197,9 +176,8 @@ function generateSlides(year, roundNumber, words, outputFolder) {
     words.forEach((wordObj, index) => {
       try {
         // Add word slide at current position
-        const wordSlide = wordSlideTemplate.duplicate();
+        const wordSlide = wordTemplateForDuplication.duplicate();
         wordSlide.move(currentIndex);
-        currentIndex++;
 
         // Replace text by finding and modifying shapes directly
         const wordShapes = wordSlide.getShapes();
@@ -214,31 +192,21 @@ function generateSlides(year, roundNumber, words, outputFolder) {
 
         wordSlideCount++;
 
-        if (index === 0 || index === words.length - 1) {
-          Logger.log(`DEBUG: Added word slide #${index + 1}: ${wordObj.word} at index ${currentIndex - 1}`);
+        if (index === 0 || index === words.length - 1 || index === words.length - 2) {
+          Logger.log(`DEBUG: Added word slide #${index + 1}: ${wordObj.word} at index ${currentIndex}`);
         }
 
-        // Add "Spellers at Work" between words (but not after last word)
+        // Add "Spellers at Work" interstitial between words (but not after last word)
+        // IMPORTANT: .move(X) inserts BEFORE index X, so to put interstitial AFTER the word we just added,
+        // we need to move it to currentIndex + 1 (not currentIndex, which would put it BEFORE the word)
         if (index < words.length - 1) {
-          const infoSlide = infoSlideTemplate.duplicate();
-          infoSlide.move(currentIndex);
-          currentIndex++;
-
-          // Replace text by finding and modifying shapes directly
-          const infoShapes = infoSlide.getShapes();
-          infoShapes.forEach(shape => {
-            const text = shape.getText();
-            let currentText = text.asString();
-            if (currentText.includes('{{message}}')) {
-              currentText = currentText.replace('{{message}}', `Spellers at Work\n\n..quiet please...`);
-            }
-            if (currentText.includes('{{round}}')) {
-              currentText = currentText.replace('{{round}}', '');
-            }
-            text.setText(currentText);
-          });
-
+          const interstitialSlide = interstitialTemplateForDuplication.duplicate();
+          interstitialSlide.move(currentIndex + 1);
           interstitialCount++;
+          currentIndex += 2;  // Skip both word and interstitial
+        } else {
+          currentIndex++;  // Just skip the word
+          Logger.log(`DEBUG: NOT adding interstitial after last word #${index + 1}: ${wordObj.word}`);
         }
       } catch (e) {
         Logger.log(`ERROR: Failed to create slide for word #${index + 1} (${wordObj.word}): ${e.message}`);
@@ -249,49 +217,24 @@ function generateSlides(year, roundNumber, words, outputFolder) {
     slides = presentation.getSlides();
     Logger.log(`DEBUG: After word slides, now have ${slides.length} slides (added ${wordSlideCount} word slides, ${interstitialCount} interstitials)`);
 
-    // Add concluding slide
-    Logger.log(`DEBUG: Creating conclusion slide`);
-    const conclusionSlide = infoSlideTemplate.duplicate();
+    // Delete the pristine template copies we made for duplication (but NOT the original interstitial at index 1)
+    Logger.log(`DEBUG: Deleting pristine template copies...`);
+    wordTemplateForDuplication.remove();
+    interstitialTemplateForDuplication.remove();
 
-    // Replace text by finding and modifying shapes directly
-    const conclusionShapes = conclusionSlide.getShapes();
-    conclusionShapes.forEach(shape => {
-      const text = shape.getText();
-      let currentText = text.asString();
-      if (currentText.includes('{{message}}')) {
-        currentText = currentText.replace('{{message}}', `This concludes\nRound ${roundNumber}`);
-      }
-      if (currentText.includes('{{round}}')) {
-        currentText = currentText.replace('{{round}}', '');
-      }
-      text.setText(currentText);
-    });
+    // Move conclusion slide to end
+    Logger.log(`DEBUG: Moving conclusion slide to end at index ${currentIndex}`);
+    conclusionSlideTemplate.move(currentIndex);
+    Logger.log(`DEBUG: Conclusion slide moved to position ${currentIndex}`);
 
+    // Log the last few slides to verify structure
     slides = presentation.getSlides();
-    Logger.log(`DEBUG: After conclusion slide, now have ${slides.length} slides`);
-
-    // Move conclusion slide to correct position (after all word slides)
-    conclusionSlide.move(currentIndex);
-    currentIndex++;
-    Logger.log(`DEBUG: Moved conclusion slide to position ${currentIndex - 1}`);
-
-    // Delete the template slides (they're still at the end)
-    Logger.log(`DEBUG: Deleting template slides...`);
-    slides = presentation.getSlides();
-
-    // Find and delete template slides (word and info slide templates)
-    // They should be the last remaining slides with {{word}} or {{message}} placeholders
-    let deletedCount = 0;
-    for (let i = slides.length - 1; i >= 0; i--) {
+    Logger.log(`DEBUG: Total slides before save: ${slides.length}`);
+    for (let i = Math.max(0, slides.length - 5); i < slides.length; i++) {
       const slide = slides[i];
-      const slideText = slide.getShapes().map(s => s.getText().asString()).join(' ');
-      if (slideText.includes('{{word}}') || slideText.includes('{{message}}')) {
-        Logger.log(`DEBUG: Deleting template slide at index ${i}`);
-        slide.remove();
-        deletedCount++;
-      }
+      const slideText = slide.getShapes().map(s => s.getText().asString()).join(' ').substring(0, 50);
+      Logger.log(`DEBUG: Slide ${i}: ${slideText}`);
     }
-    Logger.log(`DEBUG: Deleted ${deletedCount} template slides`);
 
     // CRITICAL: Save and close to persist all changes
     Logger.log(`Calling saveAndClose() to persist all changes...`);
@@ -467,10 +410,8 @@ function styleText(textRange, color, fontSize, alignment) {
  * TODO: Make this configurable
  */
 function getEventDate(year) {
-  // Default to current date format
-  const now = new Date();
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  return `${months[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+  // Return configured event date
+  return SLIDES_CONFIG.EVENT_DATE;
 }
 
 /**
