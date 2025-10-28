@@ -38,7 +38,9 @@ const SLIDES_CONFIG = {
   },
 
   // Event configuration
-  EVENT_DATE: 'Nov 16, 2025'  // Date shown on title slide - update this each year
+  // Event date is read from ScriptConfig sheet (B1)
+  // This is a fallback if ScriptConfig sheet is not found
+  EVENT_DATE_FALLBACK: 'Nov 16, 2025'
 };
 
 // ============================================================================
@@ -406,12 +408,38 @@ function styleText(textRange, color, fontSize, alignment) {
 }
 
 /**
- * Get event date for a given year
- * TODO: Make this configurable
+ * Get event date from ScriptConfig sheet
+ * Reads from ScriptConfig sheet, row 1: A1="Event Date", B1=actual date
  */
 function getEventDate(year) {
-  // Return configured event date
-  return SLIDES_CONFIG.EVENT_DATE;
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const configSheet = ss.getSheetByName('ScriptConfig');
+
+    if (!configSheet) {
+      Logger.log('WARNING: ScriptConfig sheet not found, using fallback date');
+      return SLIDES_CONFIG.EVENT_DATE_FALLBACK;
+    }
+
+    // Read from B1 (A1 should be the label "Event Date")
+    const eventDate = configSheet.getRange('B1').getValue();
+
+    if (!eventDate) {
+      Logger.log('WARNING: Event Date (B1) is empty in ScriptConfig sheet, using fallback');
+      return SLIDES_CONFIG.EVENT_DATE_FALLBACK;
+    }
+
+    // Convert to string if it's a Date object
+    if (eventDate instanceof Date) {
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${months[eventDate.getMonth()]} ${eventDate.getDate()}, ${eventDate.getFullYear()}`;
+    }
+
+    return eventDate.toString();
+  } catch (e) {
+    Logger.log(`ERROR reading event date from ScriptConfig: ${e.message}`);
+    return 'TBD';
+  }
 }
 
 /**
