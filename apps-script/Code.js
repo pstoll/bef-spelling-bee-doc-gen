@@ -18,8 +18,8 @@ const CONFIG = {
   SHEET_NAME_PATTERN: /^Round\s+(\d+)(\s|\+)?$/,
   ROUND_NUMBER_PATTERN: /Round\s+(\d+)/,
 
-  // Output folder naming
-  OUTPUT_FOLDER_PREFIX: 'BEF Spelling Bee',
+  // Output folder naming - will be formatted as "YYYY Spelling Bee Materials (generated)"
+  OUTPUT_FOLDER_FORMAT: '{year} Spelling Bee Materials (generated)',
 
   // Seeded random constants (for deterministic shuffle)
   RANDOM_SEED: {
@@ -317,7 +317,7 @@ function shuffleArray(array, seed) {
  * @returns {Folder} Google Drive folder
  */
 function getOrCreateOutputFolder(year) {
-  const folderName = `${CONFIG.OUTPUT_FOLDER_PREFIX} ${year}`;
+  const folderName = CONFIG.OUTPUT_FOLDER_FORMAT.replace('{year}', year);
 
   // Get the spreadsheet's parent folder
   const ss = SpreadsheetApp.getActiveSpreadsheet();
