@@ -1,6 +1,6 @@
 # BEF Spelling Bee Document Generator
 
-Tools to generate spelling bee materials (word lists and presentation slides) for the Brookline Education Foundation's 5th Grade Spelling Bee.
+Tools to generate spelling bee materials (word lists and presentation slides) for the [Brookline Education Foundation's 5th Grade Spelling Bee](https://brooklinefoundation.org/spelling-bee/).
 
 ## Two Approaches
 
