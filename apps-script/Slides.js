@@ -60,8 +60,9 @@ function generateSlides(year, roundNumber, words, outputFolder) {
     // Find template file in same folder as spreadsheet
     const templateFile = findSlideTemplateFile(SLIDES_CONFIG.TEMPLATE.FILE_NAME);
     if (!templateFile) {
-      Logger.log(`Error: Template file "${SLIDES_CONFIG.TEMPLATE.FILE_NAME}" not found in same folder as spreadsheet`);
-      return null;
+      const errorMsg = `Slides template "${SLIDES_CONFIG.TEMPLATE.FILE_NAME}" not found in same folder as spreadsheet`;
+      Logger.log(`Error: ${errorMsg}`);
+      throw new Error(errorMsg);
     }
 
     // Copy template presentation using Drive API (DriveApp.makeCopy has issues with persistence)
@@ -263,7 +264,7 @@ function generateSlides(year, roundNumber, words, outputFolder) {
   } catch (error) {
     Logger.log(`Error generating slides: ${error.message}`);
     Logger.log(`Stack: ${error.stack}`);
-    return null;
+    throw error;
   }
 }
 
@@ -440,4 +441,32 @@ function getEventDate(year) {
     Logger.log(`ERROR reading event date from ScriptConfig: ${e.message}`);
     return 'TBD';
   }
+}
+
+/**
+ * Wait for a Drive file to be fully initialized (have a modifiedTime)
+ * @param {string} fileId - The file ID to wait for
+ * @param {number} maxWaitSeconds - Maximum seconds to wait (default 30)
+ * @returns {boolean} True if file is ready, false if timeout
+ */
+function waitForFileReady(fileId, maxWaitSeconds = 30) {
+  Logger.log(`Waiting for file ${fileId} to be ready...`);
+  const startTime = Date.now();
+  let attempts = 0;
+
+  while (Date.now() - startTime < maxWaitSeconds * 1000) {
+    attempts++;
+    const fileCheck = Drive.Files.get(fileId, {fields: 'id,name,modifiedTime'});
+    Logger.log(`Attempt ${attempts}: modifiedTime = ${fileCheck.modifiedTime}`);
+
+    if (fileCheck.modifiedTime) {
+      Logger.log(`File ready after ${attempts} attempts (${Date.now() - startTime}ms)`);
+      return true;
+    }
+
+    Utilities.sleep(1000); // Wait 1 second between checks
+  }
+
+  Logger.log(`WARNING: File not ready after ${maxWaitSeconds} seconds`);
+  return false;
 }

@@ -48,8 +48,9 @@ function generateDoc(year, roundNumber, words, outputFolder) {
     // Find template file
     const templateFile = findDocTemplateFile(DOCS_CONFIG.TEMPLATE.FILE_NAME);
     if (!templateFile) {
-      Logger.log(`Error: Template file "${DOCS_CONFIG.TEMPLATE.FILE_NAME}" not found in same folder as spreadsheet`);
-      return null;
+      const errorMsg = `Docs template "${DOCS_CONFIG.TEMPLATE.FILE_NAME}" not found in same folder as spreadsheet`;
+      Logger.log(`Error: ${errorMsg}`);
+      throw new Error(errorMsg);
     }
 
     // Copy template
@@ -159,7 +160,7 @@ function generateDoc(year, roundNumber, words, outputFolder) {
   } catch (error) {
     Logger.log(`Error generating doc: ${error.message}`);
     Logger.log(`Stack: ${error.stack}`);
-    return null;
+    throw error;
   }
 }
 

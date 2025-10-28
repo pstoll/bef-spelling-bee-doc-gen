@@ -161,19 +161,11 @@ function generateMaterialsForYear(year, specificRounds) {
 
       // Generate Slides
       const slidesFile = generateSlides(year, roundNumber, shuffledWords, outputFolder);
-      if (slidesFile) {
-        generatedFiles.push(`Round ${roundNumber} Slides: ${slidesFile.getUrl()}`);
-      } else {
-        errors.push(`Round ${roundNumber}: Slides generation failed`);
-      }
+      generatedFiles.push(`Round ${roundNumber} Slides: ${slidesFile.getUrl()}`);
 
       // Generate Docs
       const docFile = generateDoc(year, roundNumber, shuffledWords, outputFolder);
-      if (docFile) {
-        generatedFiles.push(`Round ${roundNumber} Doc: ${docFile.getUrl()}`);
-      } else {
-        errors.push(`Round ${roundNumber}: Doc generation failed`);
-      }
+      generatedFiles.push(`Round ${roundNumber} Doc: ${docFile.getUrl()}`);
     } catch (e) {
       Logger.log(`ERROR processing Round ${roundNumber}: ${e.message}`);
       errors.push(`Round ${roundNumber}: ${e.message}`);
