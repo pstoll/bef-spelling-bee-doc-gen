@@ -410,9 +410,14 @@ function styleText(textRange, color, fontSize, alignment) {
 
 /**
  * Get event date from ScriptConfig sheet
- * Reads from ScriptConfig sheet, row 1: A1="Event Date", B1=actual date
+ * Reads from ScriptConfig sheet with format:
+ *   Row 1: A1="Year", B1="Event Date" (headers)
+ *   Row 2+: A2=2025, B2="Nov 16, 2025" (data rows)
+ * @param {string} year - Year to look up (e.g., "2024", "2025")
+ * @returns {string} Event date string
  */
 function getEventDate(year) {
+  Logger.log(`ENTRY getEventDate: Called with year = '${year}'`);
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const configSheet = ss.getSheetByName('ScriptConfig');
@@ -421,25 +426,61 @@ function getEventDate(year) {
       Logger.log('WARNING: ScriptConfig sheet not found, using fallback date');
       return SLIDES_CONFIG.EVENT_DATE_FALLBACK;
     }
+    Logger.log(`getEventDate: Found ScriptConfig sheet`);
 
-    // Read from B1 (A1 should be the label "Event Date")
-    const eventDate = configSheet.getRange('B1').getValue();
+    // Get all data from the config sheet
+    const data = configSheet.getDataRange().getValues();
 
-    if (!eventDate) {
-      Logger.log('WARNING: Event Date (B1) is empty in ScriptConfig sheet, using fallback');
+    if (data.length < 2) {
+      Logger.log('WARNING: ScriptConfig sheet has no data rows, using fallback');
       return SLIDES_CONFIG.EVENT_DATE_FALLBACK;
     }
 
-    // Convert to string if it's a Date object
-    if (eventDate instanceof Date) {
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return `${months[eventDate.getMonth()]} ${eventDate.getDate()}, ${eventDate.getFullYear()}`;
+    // Row 0 should be headers: ["Year", "Event Date"]
+    // Rows 1+ contain data
+    const headers = data[0];
+    const yearColIndex = headers.findIndex(h => h.toString().toLowerCase() === 'year');
+    const dateColIndex = headers.findIndex(h => h.toString().toLowerCase().includes('event date'));
+
+    Logger.log(`DEBUG getEventDate: Looking for year '${year}'`);
+    Logger.log(`DEBUG getEventDate: Headers = ${JSON.stringify(headers)}`);
+    Logger.log(`DEBUG getEventDate: yearColIndex = ${yearColIndex}, dateColIndex = ${dateColIndex}`);
+    Logger.log(`DEBUG getEventDate: Total rows in data = ${data.length}`);
+
+    if (yearColIndex === -1 || dateColIndex === -1) {
+      Logger.log(`WARNING: ScriptConfig sheet missing required columns (Year, Event Date), using fallback`);
+      return SLIDES_CONFIG.EVENT_DATE_FALLBACK;
     }
 
-    return eventDate.toString();
+    // Find the row matching the requested year
+    for (let i = 1; i < data.length; i++) {
+      const rowYear = data[i][yearColIndex].toString().trim();
+      Logger.log(`DEBUG getEventDate: Row ${i} year = '${rowYear}', comparing to '${year}'`);
+      if (rowYear === year.toString().trim()) {
+        const eventDate = data[i][dateColIndex];
+        Logger.log(`DEBUG getEventDate: MATCH FOUND! eventDate = '${eventDate}'`);
+
+        if (!eventDate) {
+          Logger.log(`WARNING: Event Date for year ${year} is empty, using fallback`);
+          return SLIDES_CONFIG.EVENT_DATE_FALLBACK;
+        }
+
+        // Convert to string if it's a Date object
+        if (eventDate instanceof Date) {
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          return `${months[eventDate.getMonth()]} ${eventDate.getDate()}, ${eventDate.getFullYear()}`;
+        }
+
+        Logger.log(`Found event date for year ${year}: ${eventDate}`);
+        return eventDate.toString();
+      }
+    }
+
+    Logger.log(`WARNING: Year ${year} not found in ScriptConfig sheet, using fallback`);
+    return SLIDES_CONFIG.EVENT_DATE_FALLBACK;
   } catch (e) {
     Logger.log(`ERROR reading event date from ScriptConfig: ${e.message}`);
-    return 'TBD';
+    return SLIDES_CONFIG.EVENT_DATE_FALLBACK;
   }
 }
 

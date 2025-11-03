@@ -6,6 +6,9 @@
 // ============================================================================
 
 const CONFIG = {
+  // Deployment version (auto-updated by deploy script)
+  DEPLOYED_AT: 'NOT_DEPLOYED',
+
   // Column names in the spreadsheet
   COLUMNS: {
     WORD: 'Word',
@@ -106,6 +109,11 @@ function showYearPrompt() {
 function generateMaterialsForYear(year, specificRounds) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();
+
+  Logger.log(`==================================================`);
+  Logger.log(`CODE VERSION DEPLOYED AT: ${CONFIG.DEPLOYED_AT}`);
+  Logger.log(`==================================================`);
+  Logger.log(`Starting generation for year: ${year}`);
 
   // Find all sheets that match "Round X" pattern
   const sheets = ss.getSheets();
