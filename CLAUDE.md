@@ -14,10 +14,10 @@ This repository contains tools to generate spelling bee materials (word lists an
    - Anyone with Sheet access can run it
    - See `apps-script/README.md` for details
 
-2. **Node.js/Docker (Legacy)** - Generate DOCX/PPTX from downloaded Excel files
+2. **Node.js/Docker** - Generate DOCX/PPTX from downloaded Excel files
    - Requires local setup and Docker
    - Outputs DOCX/PPTX files that need PDF conversion
-   - See `src/README.md` for details
+   - See `nodejs-generators/README.md` for details
 
 ---
 

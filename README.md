@@ -24,7 +24,7 @@ Generate Google Docs and Slides directly from Google Sheets. No local setup requ
 
 ---
 
-### 2. Node.js/Docker (Legacy)
+### 2. Node.js/Docker
 
 Generate DOCX and PPTX files from downloaded Excel files. Requires local setup.
 
@@ -33,7 +33,7 @@ Generate DOCX and PPTX files from downloaded Excel files. Requires local setup.
 - Deterministic shuffling with seedrandom
 - Custom BEF branding and formatting
 
-**Documentation:** See [src/README.md](src/README.md)
+**Documentation:** See [nodejs-generators/README.md](nodejs-generators/README.md)
 
 **When to use:**
 - Need DOCX/PPTX files instead of Google formats
@@ -50,8 +50,13 @@ Generate DOCX and PPTX files from downloaded Excel files. Requires local setup.
 │   ├── Slides.js        # Google Slides generation
 │   ├── Docs.js          # Google Docs generation
 │   └── templates/       # Template file backups
-├── src/                 # Node.js generators (legacy)
+├── nodejs-generators/   # Node.js/Docker generators
+│   ├── gen-docx-template.js  # DOCX word list generator
+│   ├── make-ppts.js     # PowerPoint slides generator
+│   ├── Dockerfile       # Docker container for generation
+│   └── README.md        # Node.js/Docker documentation
 ├── inputs/              # Templates and graphics
+├── scripts/             # Deployment scripts
 └── word_db/            # Word database files (gitignored)
 ```
 
